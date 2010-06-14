@@ -1,0 +1,101 @@
+This demo shows how to use bidirectional connections for callbacks with Glacier2
+using facades.
+
+File sources: (all from Ice-3.3.1-demos)
+============
+
+Callback.ice:         demopy/Ice/bidir (unchanged)
+Client.py:            demopy/Ice/bidir with minor changes from .../Glacier2/callback [[1]]
+Server.py:            demopy/Ice/bidir with minor changes for reuse [[2]]
+SessionServer.py:     demopy/Glacier2/callback with minor changes to use CallbackSenderI [[3]]
+config.client:        demopy/Glacier2/callback with changes to use tcp rather than ssl
+config.glacier2:      demopy/Glacier2/callback with changes to use tcp rather than ssl
+config.server         demopy/Ice/bidir/ (unchanged)
+config.sessionserver: demopy/Glacier2/callback (unchanged)
+
+
+Running the server as provided results in an ObjectNotExistException[[4]].
+Enabling Ice.ACM.Client in config.sessionserver causes a Bus Error on Mac OS X 10.6
+
+==== Footnotes ====
+
+[[1]] moore@Josh-Moores-MacBook-Pro:/tmp/fixedprox$ diff /Users/moore/Downloads/Ice-3.3.1-demos/demopy/Ice/bidir/Client.py Client.py 
+31c31,45
+<         server = Demo.CallbackSenderPrx.checkedCast(self.communicator().propertyToProxy('CallbackSender.Proxy'))
+---
+>         import Glacier2
+>         ## Copied from demopy/Glacier2/callback/Client.py
+>         defaultRouter = self.communicator().getDefaultRouter()
+>         if not defaultRouter:
+>             print self.appName() + ": no default router set"
+>             return 1
+> 
+>         router = Glacier2.RouterPrx.checkedCast(defaultRouter)
+>         if not router:
+>             print self.appName() + ": configured router is not a Glacier2 router"
+>             return 1
+>         ## End copied
+> 
+>         session = router.createSession("", "")
+>         server = Demo.CallbackSenderPrx.checkedCast(session)
+
+
+
+[[2]] moore@Josh-Moores-MacBook-Pro:/tmp/fixedprox$ diff /Users/moore/Downloads/Ice-3.3.1-demos/demopy/Ice/bidir/Server.py Server.py
+11c11
+< import os, sys, traceback, threading, Ice
+---
+> import os, sys, traceback, threading, Ice, Glacier2
+21c21
+< class CallbackSenderI(Demo.CallbackSender, threading.Thread):
+---
+> class CallbackSenderI(Demo.CallbackSender, threading.Thread, Glacier2.Session): # Inheritance from Session added
+102,103c102,104
+< app = Server()
+< sys.exit(app.main(sys.argv, "config.server"))
+---
+> if __name__ == "__main__": ## Added to allow reuse
+>     app = Server()
+>     sys.exit(app.main(sys.argv, "config.server"))
+
+
+
+[[3]] moore@Josh-Moores-MacBook-Pro:/tmp/fixedprox$ diff /Users/moore/Downloads/Ice-3.3.1-demos/demopy/Glacier2/callback/SessionServer.py SessionServer.py 
+26a27,29
+>     def __init__(self, communicator):
+>         self.communicator = communicator
+> 
+29c32,35
+<         session = SessionI(userId)
+---
+>         # session = SessionI(userId)
+>         from Server import CallbackSenderI
+>         session = CallbackSenderI(self.communicator)
+>         session.start()
+40c46
+<         adapter.add(SessionManagerI(), self.communicator().stringToIdentity("sessionmanager"))
+---
+>         adapter.add(SessionManagerI(self.communicator()), self.communicator().stringToIdentity("sessionmanager"))
+
+
+
+[[4]] moore@Josh-Moores-MacBook-Pro:~/code/fixedprox$ python SessionServer.py
+verified user `' with password `'
+creating session for user `'
+adding client `D607C6CD-814D-427B-B999-A195504C6F87'
+removing client `D607C6CD-814D-427B-B999-A195504C6F87':
+Traceback (most recent call last):
+  File "/Users/moore/code/fixedprox/Server.py", line 71, in run
+    p.callback(num)
+  File "Callback.ice", line 46, in callback
+ObjectNotExistException: exception ::Ice::ObjectNotExistException
+{
+    id =
+    {
+        name = D607C6CD-814D-427B-B999-A195504C6F87
+        category =
+    }
+    facet =
+    operation = callback
+}
+

@@ -45,31 +45,11 @@ class CallbackSenderI(Demo.CallbackSender, threading.Thread, Glacier2.Session): 
 
         print "adding client `" + str(obj) + "'"
 
-        ident = obj.ice_getIdentity()
-        cat = ident.category
-        print "Category:"
-        print cat
-        self._control.categories().add([cat])
-
+        # Immediate call
         obj.callback(-1)
 
+        # Delayed call
         self._clients.append(obj)
-
-        self._cond.release()
-
-    def addClientId(self, ident, current=None):
-        self._cond.acquire()
-
-        print "adding client `" + self._communicator.identityToString(ident) + "'"
-
-        cat = ident.category
-        print "Category:"
-        print cat
-        self._control.categories().add([cat])
-
-        #client = Demo.CallbackReceiverPrx.uncheckedCast(current.con.createProxy(ident))
-        client = Demo.CallbackReceiverPrx.uncheckedCast(current.adapter.createProxy(ident))
-        self._clients.append(client)
 
         self._cond.release()
 
@@ -89,7 +69,7 @@ class CallbackSenderI(Demo.CallbackSender, threading.Thread, Glacier2.Session): 
 
             if len(clients) > 0:
                 num = num + 1
-                
+
                 for p in clients:
                     try:
                         p.callback(num)

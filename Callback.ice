@@ -23,7 +23,6 @@ interface CallbackReceiver
 interface CallbackSender
 {
     void addClientObj(CallbackReceiver* prx);
-    void addClientId(Ice::Identity ident);
 };
 
 };

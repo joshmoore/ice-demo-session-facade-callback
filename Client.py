@@ -21,6 +21,9 @@ import Demo
 class CallbackReceiverI(Demo.CallbackReceiver):
     def callback(self, num, current=None):
         print "received callback #" + str(num)
+        if num == 1:
+            print "stopping"
+            raise SystemExit()
 
 class Client(Ice.Application):
     def run(self, args):
@@ -48,26 +51,16 @@ class Client(Ice.Application):
             return 1
 
         adapter = self.communicator().createObjectAdapterWithRouter("Callback.Client", router)
+        adapter.activate()
+
         ident = Ice.Identity()
         ident.name = Ice.generateUUID()
-        #ident.category = router.getCategoryForClient()
         ident.category = router.getCategoryForClient()
-
-        adapter.activate()
 
         prx = adapter.add(CallbackReceiverI(), ident)
         prx = Demo.CallbackReceiverPrx.uncheckedCast(prx)
 
-        print "Category:"
-        print ident.category
-        server.ice_getConnection().setAdapter(adapter)
-
         server.addClientObj(prx)
-
-        context={}
-        context["_fwd"] = "t"
-        server.addClientId(ident, context)
-
         self.communicator().waitForShutdown()
 
         print "here"

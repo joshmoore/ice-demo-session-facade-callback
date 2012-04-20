@@ -31,9 +31,16 @@ class SessionManagerI(Glacier2.SessionManager):
         print "creating session for user `" + userId + "'"
         # session = SessionI(userId)
         from Server import CallbackSenderI
-        session = CallbackSenderI(self._communicator)
+        session = CallbackSenderI(self._communicator, control)
         session.start()
-        return Glacier2.SessionPrx.uncheckedCast(current.adapter.addWithUUID(session))
+        from uuid import uuid4
+        id = Ice.Identity()
+        id.name = str(uuid4())
+        id.category = "foo"
+        control.categories().add(["foo"])
+        control.identities().add([id])
+        prx = current.adapter.add(session, id)
+        return Glacier2.SessionPrx.uncheckedCast(prx)
 
 class SessionServer(Ice.Application):
     def run(self, args):

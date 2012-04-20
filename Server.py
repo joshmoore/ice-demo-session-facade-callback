@@ -19,9 +19,10 @@ Ice.loadSlice('-I' + slice_dir + ' Callback.ice')
 import Demo
 
 class CallbackSenderI(Demo.CallbackSender, threading.Thread, Glacier2.Session): # Inheritance from Session added
-    def __init__(self, communicator):
+    def __init__(self, communicator, control):
         threading.Thread.__init__(self)
         self._communicator = communicator
+        self._control = control
         self._destroy = False
         self._clients = []
         self._cond = threading.Condition()
@@ -39,12 +40,35 @@ class CallbackSenderI(Demo.CallbackSender, threading.Thread, Glacier2.Session): 
 
         self.join()
 
-    def addClient(self, ident, current=None):
+    def addClientObj(self, obj, current=None):
+        self._cond.acquire()
+
+        print "adding client `" + str(obj) + "'"
+
+        ident = obj.ice_getIdentity()
+        cat = ident.category
+        print "Category:"
+        print cat
+        self._control.categories().add([cat])
+
+        obj.callback(-1)
+
+        self._clients.append(obj)
+
+        self._cond.release()
+
+    def addClientId(self, ident, current=None):
         self._cond.acquire()
 
         print "adding client `" + self._communicator.identityToString(ident) + "'"
 
-        client = Demo.CallbackReceiverPrx.uncheckedCast(current.con.createProxy(ident))
+        cat = ident.category
+        print "Category:"
+        print cat
+        self._control.categories().add([cat])
+
+        #client = Demo.CallbackReceiverPrx.uncheckedCast(current.con.createProxy(ident))
+        client = Demo.CallbackReceiverPrx.uncheckedCast(current.adapter.createProxy(ident))
         self._clients.append(client)
 
         self._cond.release()

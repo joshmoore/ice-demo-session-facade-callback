@@ -47,14 +47,27 @@ class Client(Ice.Application):
             print self.appName() + ": invalid proxy"
             return 1
 
-        adapter = self.communicator().createObjectAdapterWithRouter("", router)
+        adapter = self.communicator().createObjectAdapterWithRouter("Callback.Client", router)
         ident = Ice.Identity()
         ident.name = Ice.generateUUID()
+        #ident.category = router.getCategoryForClient()
         ident.category = router.getCategoryForClient()
-        adapter.add(CallbackReceiverI(), ident)
+
         adapter.activate()
+
+        prx = adapter.add(CallbackReceiverI(), ident)
+        prx = Demo.CallbackReceiverPrx.uncheckedCast(prx)
+
+        print "Category:"
+        print ident.category
         server.ice_getConnection().setAdapter(adapter)
-        server.addClient(ident)
+
+        server.addClientObj(prx)
+
+        context={}
+        context["_fwd"] = "t"
+        server.addClientId(ident, context)
+
         self.communicator().waitForShutdown()
 
         print "here"

@@ -1,0 +1,23 @@
+While trying to use the createObjectAdapterWithRouter solution outlined in the Glacier2 chapter:
+
+/Users/moore/GlencoeSoftware.git/git/omero.git/dist/lib/python/omero/clients.py in createSession(self, username, password)
+    472                 self.__oa = self.__ic.createObjectAdapterWithRouter("omero.ClientCallback", router)
+    473                 cb = BaseClient.CallbackI(self.__ic, self.__oa)
+--> 474                 raw = self.__oa.add(cb, self.__ic.stringToIdentity("%s/%s" % (self.__cat, self.__uuid)))
+    475                 self.__oa.activate()
+    476                 #self.__sf.setCallback(omero.api.ClientCallbackPrx.uncheckedCast(raw))
+
+
+/opt/Ice-3.3.1-64/python/Ice.pyc in stringToIdentity(self, str)
+    266 
+    267     def stringToIdentity(self, str):
+--> 268         return self._impl.stringToIdentity(str)
+    269 
+    270     def identityToString(self, ident):
+
+IdentityParseException: exception ::Ice::IdentityParseException
+{
+    str = cr"2pP`%^V_yo/?R>P#_/6ca152b7-3623-49c1-9523-f7aa54a45eee
+}
+
+

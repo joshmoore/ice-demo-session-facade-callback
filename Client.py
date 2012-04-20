@@ -47,10 +47,10 @@ class Client(Ice.Application):
             print self.appName() + ": invalid proxy"
             return 1
 
-        adapter = self.communicator().createObjectAdapter("")
+        adapter = self.communicator().createObjectAdapterWithRouter("", router)
         ident = Ice.Identity()
         ident.name = Ice.generateUUID()
-        ident.category = ""
+        ident.category = router.getCategoryForClient()
         adapter.add(CallbackReceiverI(), ident)
         adapter.activate()
         server.ice_getConnection().setAdapter(adapter)

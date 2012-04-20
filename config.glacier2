@@ -7,7 +7,7 @@ Glacier2.InstanceName=DemoGlacier2
 # The client-visible endpoint of Glacier2. This should be an endpoint
 # visible from the public Internet, and it should be secure.
 # 
-Glacier2.Client.Endpoints=ssl -p 4064 -h 127.0.0.1
+Glacier2.Client.Endpoints=tcp -p 4064 -h 127.0.0.1
 
 #
 # The server-visible endpoint of Glacier2. This endpoint is only
@@ -129,8 +129,8 @@ Ice.Warn.Connections=1
 #
 # SSL Configuration
 #
-Ice.Plugin.IceSSL=IceSSL:createIceSSL
-IceSSL.DefaultDir=/Users/moore/code/zeroc-ice-demos.git/certs/
-IceSSL.CertAuthFile=cacert.pem
-IceSSL.CertFile=s_rsa1024_pub.pem
-IceSSL.KeyFile=s_rsa1024_priv.pem
+#Ice.Plugin.IceSSL=IceSSL:createIceSSL
+#IceSSL.DefaultDir=/Users/moore/code/zeroc-ice-demos.git/certs/
+#IceSSL.CertAuthFile=cacert.pem
+#IceSSL.CertFile=s_rsa1024_pub.pem
+#IceSSL.KeyFile=s_rsa1024_priv.pem

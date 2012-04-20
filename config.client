@@ -2,7 +2,7 @@
 # The proxy to the Glacier2 router for all outgoing connections. This
 # must match the value of Glacier2.Client.Endpoints in config.glacier2.
 #
-Ice.Default.Router=DemoGlacier2/router:ssl -p 4064 -h 127.0.0.1
+Ice.Default.Router=DemoGlacier2/router:tcp -p 4064 -h 127.0.0.1
 
 #
 # We don't need any endpoints for the client if we use a
@@ -63,8 +63,8 @@ Ice.RetryIntervals=-1
 #
 # SSL Configuration
 #
-Ice.Plugin.IceSSL=IceSSL:createIceSSL
-IceSSL.DefaultDir=/Users/moore/code/zeroc-ice-demos.git/certs/
-IceSSL.CertAuthFile=cacert.pem
-IceSSL.CertFile=c_rsa1024_pub.pem
-IceSSL.KeyFile=c_rsa1024_priv.pem
+#Ice.Plugin.IceSSL=IceSSL:createIceSSL
+#IceSSL.DefaultDir=/Users/moore/code/zeroc-ice-demos.git/certs/
+#IceSSL.CertAuthFile=cacert.pem
+#IceSSL.CertFile=c_rsa1024_pub.pem
+#IceSSL.KeyFile=c_rsa1024_priv.pem

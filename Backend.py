@@ -18,20 +18,18 @@ if not slice_dir:
 Ice.loadSlice('-I' + slice_dir + ' Callback.ice')
 import Demo
 
-class CallbackSenderI(Demo.CallbackSender, threading.Thread, Glacier2.Session): # Inheritance from Session added
-    def __init__(self, communicator, control, backend):
+class CallbackBackendI(Demo.CallbackSender, threading.Thread, Glacier2.Session): # Inheritance from Session added
+    def __init__(self, communicator):
         threading.Thread.__init__(self)
         self._communicator = communicator
-        self._control = control
         self._destroy = False
         self._clients = []
         self._cond = threading.Condition()
-        self._backend = backend
 
     def destroy(self, current=None):
         self._cond.acquire()
 
-        print "destroying callback sender"
+        print "destroying callback backend"
         self._destroy = True
 
         try:
@@ -46,11 +44,8 @@ class CallbackSenderI(Demo.CallbackSender, threading.Thread, Glacier2.Session): 
 
         print "adding client `" + str(obj) + "'"
 
-        # Backend will make calls under -2
-        self._backend.addClientObj(obj, current.ctx)
-
         # Immediate call
-        obj.callback(-1)
+        obj.callback(-2)
 
         # Delayed call
         self._clients.append(obj)
@@ -58,7 +53,7 @@ class CallbackSenderI(Demo.CallbackSender, threading.Thread, Glacier2.Session): 
         self._cond.release()
 
     def run(self):
-        num = 0
+        num = -2
 
         while True:
 
@@ -72,7 +67,7 @@ class CallbackSenderI(Demo.CallbackSender, threading.Thread, Glacier2.Session): 
                 self._cond.release()
 
             if len(clients) > 0:
-                num = num + 1
+                num -= 1
 
                 for p in clients:
                     try:
@@ -88,3 +83,26 @@ class CallbackSenderI(Demo.CallbackSender, threading.Thread, Glacier2.Session): 
                         finally:
                             self._cond.release()
 
+
+class Backend(Ice.Application):
+    def run(self, args):
+        if len(args) > 1:
+            print self.appName() + ": too many arguments"
+            return 1
+
+        adapter = self.communicator().createObjectAdapter("Callback.Backend")
+        sender = CallbackBackendI(self.communicator())
+        adapter.add(sender, self.communicator().stringToIdentity("backend"))
+        adapter.activate()
+
+        sender.start()
+        try:
+            self.communicator().waitForShutdown()
+        finally:
+            sender.destroy()
+
+        return 0
+
+if __name__ == "__main__": ## Added to allow reuse
+    app = Backend()
+    sys.exit(app.main(sys.argv, "config.backend"))

@@ -13,6 +13,9 @@ s:
 c:
 	$(VERSION) && slice2py --version && $(PYTHON) Client.py
 
+b:
+	$(VERSION) && slice2py --version && $(PYTHON) Backend.py
+
 clean:
 	rm -rf Callback_ice.py Demo *.pyc
 

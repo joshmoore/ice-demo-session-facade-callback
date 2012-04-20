@@ -1,9 +1,10 @@
 #
-# The server creates one single object adapter with the name
-# "Callback.Server". The following line sets the endpoints for this
-# adapter.
+# The endpoint of the session server's object adapter. This should be
+# an endpoint on an internal network (like 192.168.x.x), or on the
+# loopback, so that the session server is not directly accessible from
+# the Internet.
 #
-Callback.Server.Endpoints=tcp -p 10000
+Callback.Backend.Endpoints=tcp -h 127.0.0.1 -p 10002
 
 #
 # Warn about connection exceptions
@@ -27,3 +28,4 @@ Ice.Warn.Connections=1
 # 1 = trace protocol messages
 #
 #Ice.Trace.Protocol=1
+#Ice.ACM.Client=0

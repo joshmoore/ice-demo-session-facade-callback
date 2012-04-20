@@ -73,9 +73,10 @@ class CallbackSenderI(Demo.CallbackSender, threading.Thread, Glacier2.Session): 
                 for p in clients:
                     try:
                         p.callback(num)
-                    except:
+                    except Ice.UnknownLocalException, exception:
+                        if "ConnectionLost" not in exception.unknown:
+                            traceback.print_exc()
                         print "removing client `" + self._communicator.identityToString(p.ice_getIdentity()) + "':"
-                        traceback.print_exc()
 
                         self._cond.acquire()
                         try:
